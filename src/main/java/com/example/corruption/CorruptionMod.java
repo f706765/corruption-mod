@@ -13,8 +13,8 @@ import com.example.corruption.registry.ModSounds;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.DistExecutor;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
@@ -37,10 +37,9 @@ public class CorruptionMod {
         NeoForge.EVENT_BUS.register(CorruptionEvents.class);
 
         // 客户端特效（暗角/心跳/镜头摇晃）只在客户端注册，服务端不加载该类
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> {
+        if (FMLEnvironment.dist() == Dist.CLIENT) {
             CorruptionClientEffects.register();
-            return null;
-        });
+        }
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {
