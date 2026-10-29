@@ -4,12 +4,13 @@ import com.example.corruption.CorruptionMod;
 import com.example.corruption.entity.WatcherEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModItems {
     public static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(CorruptionMod.MODID);
 
-    public static final Item WATCHER_SPAWN_EGG = REGISTER.registerItem("watcher_spawn_egg",
+    public static final DeferredItem<Item> WATCHER_SPAWN_EGG = REGISTER.registerItem("watcher_spawn_egg",
             props -> new SpawnEggItem(ModEntities.WATCHER.get(), 0x0d0d14, 0x6e1010, props),
             new Item.Properties());
 
