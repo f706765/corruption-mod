@@ -8,29 +8,33 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventBusSubscriber;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ComputeCameraAnglesEvent;
-import net.neoforged.neoforge.event.tick.TickEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * 客户端特效（全部 Client Side，绝不触碰服务端逻辑）：
  * - 腐化 ≥50：玩家视野四周（半径 3–5 格）环形生成黑雾粒子，腐化越高越密
  * - 腐化 ≥75：循环播放低频心跳，频率随腐化升高加快
  * - 腐化 ≥90：镜头轻微倾斜/摇晃，模拟理智边缘的眩晕
+ *
+ * 不使用 @EventBusSubscriber 注解，改为在主类 Dist.CLIENT 下手动注册，
+ * 以兼容 NeoForge 21.1 的事件总线分发。
  */
-@EventBusSubscriber(modid = CorruptionMod.MODID, value = Dist.CLIENT)
 public final class CorruptionClientEffects {
     private static int heartbeatCooldown = 0;
+    private static long cameraFrame = 0;
 
     private CorruptionClientEffects() {}
 
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    /** 仅客户端调用：把本类的 @SubscribeEvent 方法挂到 NeoForge 事件总线。 */
+    public static void register() {
+        NeoForge.EVENT_BUS.register(CorruptionClientEffects.class);
+    }
 
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         Level level = mc.level;
@@ -75,19 +79,16 @@ public final class CorruptionClientEffects {
     }
 
     @SubscribeEvent
-    public static void onComputeCameraAngles(ComputeCameraAnglesEvent event) {
-        Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
-        if (player == null) return;
-
+    public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         int corruption = ClientCorruptionData.getCorruption();
         if (corruption < 90) return;
 
+        cameraFrame++;
         float t = (corruption - 90) / 10.0F;                             // 0..1
-        double time = event.getLevel().getGameTime() + event.getPartialTick();
-        float amp = Mth.lerp(t, 0.02F, 0.07F);                           // ~1°..4°
+        double time = cameraFrame * 0.05D;                               // 每帧推进，平滑振荡
+        float amp = Mth.lerp(t, 0.02F, 0.07F);                          // ~1°..4°
 
-        event.setRoll((float) Math.sin(time * 0.35) * amp);
-        event.setYaw(event.getYaw() + (float) Math.cos(time * 0.27) * amp * 0.6F);
+        event.setRoll((float) Math.sin(time * 0.35D) * amp);
+        event.setYaw(event.getYaw() + (float) Math.cos(time * 0.27D) * amp * 0.6F);
     }
 }

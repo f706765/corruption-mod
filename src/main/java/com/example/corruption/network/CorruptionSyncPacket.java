@@ -2,6 +2,7 @@ package com.example.corruption.network;
 
 import com.example.corruption.CorruptionMod;
 import com.example.corruption.client.ClientCorruptionData;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -19,7 +20,7 @@ public record CorruptionSyncPacket(int corruption) implements CustomPacketPayloa
     public static final StreamCodec<RegistryFriendlyByteBuf, CorruptionSyncPacket> STREAM_CODEC =
             StreamCodec.of((buf, p) -> p.write(buf), CorruptionSyncPacket::new);
 
-    public CorruptionSyncPacket(RegistryFriendlyByteBuf buf) {
+    public CorruptionSyncPacket(FriendlyByteBuf buf) {
         this(buf.readVarInt());
     }
 
@@ -29,7 +30,7 @@ public record CorruptionSyncPacket(int corruption) implements CustomPacketPayloa
     }
 
     @Override
-    public void write(RegistryFriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeVarInt(this.corruption);
     }
 

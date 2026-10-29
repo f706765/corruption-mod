@@ -1,5 +1,6 @@
 package com.example.corruption;
 
+import com.example.corruption.client.CorruptionClientEffects;
 import com.example.corruption.client.WatcherModel;
 import com.example.corruption.client.WatcherModelLayer;
 import com.example.corruption.client.WatcherRenderer;
@@ -9,9 +10,10 @@ import com.example.corruption.registry.ModAttributes;
 import com.example.corruption.registry.ModEntities;
 import com.example.corruption.registry.ModItems;
 import com.example.corruption.registry.ModSounds;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.DistExecutor;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -33,6 +35,12 @@ public class CorruptionMod {
         modBus.addListener(this::registerPayloads);
 
         NeoForge.EVENT_BUS.register(CorruptionEvents.class);
+
+        // 客户端特效（暗角/心跳/镜头摇晃）只在客户端注册，服务端不加载该类
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> {
+            CorruptionClientEffects.register();
+            return null;
+        });
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {
