@@ -37,7 +37,7 @@ public class CorruptionMod {
         NeoForge.EVENT_BUS.register(CorruptionEvents.class);
 
         // 客户端特效（暗角/心跳/镜头摇晃）只在客户端注册，服务端不加载该类
-        if (FMLEnvironment.dist() == Dist.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
             CorruptionClientEffects.register();
         }
     }
