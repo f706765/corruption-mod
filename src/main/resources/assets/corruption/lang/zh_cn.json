@@ -5,6 +5,13 @@
   "item.corruption.long_arms_spawn_egg": "长臂刷怪蛋",
   "item.corruption.cursed_torch": "诅咒火炬",
   "block.corruption.cursed_torch": "诅咒火炬",
+  "item.corruption.pliers": "钳子",
+  "item.corruption.cloth": "布",
+  "item.corruption.bandage": "绷带",
+  "item.corruption.lead_block": "铅块",
+  "block.corruption.lead_block": "铅块",
+  "entity.corruption.corrupted_corpse": "腐化尸体",
+  "effect.corruption.bleeding": "流血",
   "subtitles.corruption.whisper": "低语声",
   "subtitles.corruption.heartbeat": "心跳声"
 }

@@ -21,5 +21,11 @@ public final class ModBlocks {
                     .strength(0.5F)
                     .lightLevel(state -> state.getValue(CursedTorchBlock.LIT) ? 15 : 0)));
 
+    public static final DeferredHolder<Block, Block> LEAD_BLOCK = REGISTER.register("lead_block",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()));
+
     private ModBlocks() {}
 }

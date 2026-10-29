@@ -2,6 +2,9 @@ package com.example.corruption;
 
 import com.example.corruption.block.CursedTorchBlock;
 import com.example.corruption.client.CorruptionClientEffects;
+import com.example.corruption.client.CorruptedCorpseModel;
+import com.example.corruption.client.CorruptedCorpseModelLayer;
+import com.example.corruption.client.CorruptedCorpseRenderer;
 import com.example.corruption.client.LongArmsModel;
 import com.example.corruption.client.LongArmsModelLayer;
 import com.example.corruption.client.LongArmsRenderer;
@@ -9,10 +12,12 @@ import com.example.corruption.client.WatcherModel;
 import com.example.corruption.client.WatcherModelLayer;
 import com.example.corruption.client.WatcherRenderer;
 import com.example.corruption.event.CorruptionEvents;
+import com.example.corruption.event.CorruptionPlayerEvents;
 import com.example.corruption.event.LongArmsEvents;
 import com.example.corruption.network.CorruptionSyncPacket;
 import com.example.corruption.registry.ModAttributes;
 import com.example.corruption.registry.ModBlocks;
+import com.example.corruption.registry.ModEffects;
 import com.example.corruption.registry.ModEntities;
 import com.example.corruption.registry.ModItems;
 import com.example.corruption.registry.ModSounds;
@@ -37,6 +42,7 @@ public class CorruptionMod {
         ModItems.REGISTER.register(modBus);
         ModBlocks.REGISTER.register(modBus);
         ModSounds.REGISTER.register(modBus);
+        ModEffects.REGISTER.register(modBus);
 
         modBus.addListener(this::registerAttributes);
         modBus.addListener(this::registerRenderers);
@@ -46,8 +52,9 @@ public class CorruptionMod {
 
         NeoForge.EVENT_BUS.register(CorruptionEvents.class);
         NeoForge.EVENT_BUS.register(LongArmsEvents.class);
+        NeoForge.EVENT_BUS.register(CorruptionPlayerEvents.class);
 
-        // 客户端特效（暗角/心跳/镜头摇晃）只在客户端注册，服务端不加载该类
+        // 客户端特效（暗角/心跳/镜头摇晃/腐化迹象/流血）只在客户端注册，服务端不加载该类
         if (FMLEnvironment.dist == Dist.CLIENT) {
             CorruptionClientEffects.register();
         }
@@ -60,22 +67,32 @@ public class CorruptionMod {
             event.accept(ModItems.LONG_ARMS_SPAWN_EGG);
         } else if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.CURSED_TORCH);
+        } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
+            event.accept(ModItems.LEAD_BLOCK);
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS) {
+            event.accept(ModItems.PLIERS);
+        } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(ModItems.CLOTH);
+            event.accept(ModItems.BANDAGE);
         }
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(ModEntities.WATCHER.get(), ModAttributes.watcherAttributes().build());
         event.put(ModEntities.LONG_ARMS.get(), ModAttributes.longArmsAttributes().build());
+        event.put(ModEntities.CORRUPTED_CORPSE.get(), ModAttributes.corpseAttributes().build());
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.WATCHER.get(), WatcherRenderer::new);
         event.registerEntityRenderer(ModEntities.LONG_ARMS.get(), LongArmsRenderer::new);
+        event.registerEntityRenderer(ModEntities.CORRUPTED_CORPSE.get(), CorruptedCorpseRenderer::new);
     }
 
     private void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(WatcherModelLayer.WATCHER, WatcherModel::createBodyLayer);
         event.registerLayerDefinition(LongArmsModelLayer.LONG_ARMS, LongArmsModel::createBodyLayer);
+        event.registerLayerDefinition(CorruptedCorpseModelLayer.CORPSE, CorruptedCorpseModel::createBodyLayer);
     }
 
     private void registerPayloads(RegisterPayloadHandlersEvent event) {

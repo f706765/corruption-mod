@@ -4,6 +4,8 @@ import com.example.corruption.CorruptionMod;
 import com.example.corruption.block.CursedTorchBlock;
 import com.example.corruption.entity.LongArmsEntity;
 import com.example.corruption.entity.WatcherEntity;
+import com.example.corruption.item.BandageItem;
+import com.example.corruption.item.PliersItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
@@ -22,7 +24,20 @@ public final class ModItems {
             new Item.Properties());
 
     public static final DeferredItem<Item> CURSED_TORCH = REGISTER.registerItem("cursed_torch",
-            props -> new BlockItem(com.example.corruption.registry.ModBlocks.CURSED_TORCH.get(), props),
+            props -> new BlockItem(ModBlocks.CURSED_TORCH.get(), props),
+            new Item.Properties());
+
+    public static final DeferredItem<Item> PLIERS = REGISTER.registerItem("pliers",
+            PliersItem::new, new Item.Properties());
+
+    public static final DeferredItem<Item> CLOTH = REGISTER.registerItem("cloth",
+            Item::new, new Item.Properties());
+
+    public static final DeferredItem<Item> BANDAGE = REGISTER.registerItem("bandage",
+            BandageItem::new, new Item.Properties());
+
+    public static final DeferredItem<Item> LEAD_BLOCK = REGISTER.registerItem("lead_block",
+            props -> new BlockItem(ModBlocks.LEAD_BLOCK.get(), props),
             new Item.Properties());
 
     private ModItems() {}

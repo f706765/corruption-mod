@@ -1,6 +1,7 @@
 package com.example.corruption.registry;
 
 import com.example.corruption.CorruptionMod;
+import com.example.corruption.entity.CorruptedCorpseEntity;
 import com.example.corruption.entity.LongArmsEntity;
 import com.example.corruption.entity.WatcherEntity;
 import net.minecraft.core.registries.Registries;
@@ -24,6 +25,12 @@ public final class ModEntities {
                     .sized(0.7F, 3.0F)
                     .clientTrackingRange(16)
                     .build("long_arms"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<CorruptedCorpseEntity>> CORRUPTED_CORPSE =
+            REGISTER.register("corrupted_corpse", () -> EntityType.Builder.of(CorruptedCorpseEntity::new, MobCategory.MONSTER)
+                    .sized(0.9F, 2.0F)
+                    .clientTrackingRange(16)
+                    .build("corrupted_corpse"));
 
     private ModEntities() {}
 }

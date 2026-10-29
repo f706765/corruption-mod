@@ -1,7 +1,9 @@
 package com.example.corruption.event;
 
+import com.example.corruption.entity.CorruptedCorpseEntity;
 import com.example.corruption.entity.LongArmsEntity;
 import com.example.corruption.network.CorruptionSyncPacket;
+import com.example.corruption.registry.ModEffects;
 import com.example.corruption.registry.ModEntities;
 import com.example.corruption.registry.ModSounds;
 import com.example.corruption.system.CorruptionSavedData;
@@ -18,10 +20,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -65,10 +69,36 @@ public final class CorruptionEvents {
                 playWhisper(level, player);
             }
 
+            // 极重度腐化：极小概率被“感染”而开始流血
+            if (corruption >= 90 && !player.hasEffect(ModEffects.BLEEDING) && RANDOM.nextDouble() < 0.02D) {
+                player.addEffect(new MobEffectInstance(ModEffects.BLEEDING, 600, 0));
+            }
+
             // 把腐化值同步给客户端（驱动暗角/心跳/镜头特效）
             PacketDistributor.sendToPlayer(player, new CorruptionSyncPacket(corruption));
         }
         if (dirty) data.setDirty();
+    }
+
+    /**
+     * 玩家死亡时：若腐化较高，原来的躯体被腐化操控，在原地留下一具腐化尸体。
+     * 同时把玩家腐化清零，使其复活后不会被立刻锁成傀儡。
+     */
+    @SubscribeEvent
+    public static void onLivingDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) return;
+        ServerLevel level = sp.serverLevel();
+        ServerLevel ow = sp.getServer().overworld();
+        int c = CorruptionSavedData.get(ow).get(sp.getUUID(), level.getGameTime());
+        if (c < 25) return;
+
+        CorruptedCorpseEntity corpse = ModEntities.CORRUPTED_CORPSE.get().create(level);
+        if (corpse != null) {
+            corpse.moveTo(sp.getX(), sp.getY(), sp.getZ(), sp.getYRot(), 0.0F);
+            corpse.setSevere(c >= 80);
+            level.addFreshEntity(corpse);
+        }
+        CorruptionSavedData.get(ow).set(sp.getUUID(), 0, ow.getGameTime());
     }
 
     /** 在玩家周围 radius 内随机找一支火把并熄灭（直接移除）。 */
@@ -120,13 +150,39 @@ public final class CorruptionEvents {
                                 ctx.getSource().sendFailure(Component.literal("该指令只能由玩家执行"));
                                 return 0;
                             }
-                            int v = IntegerArgumentType.getInteger(ctx, "value");
-                            ServerLevel overworld = ctx.getSource().getServer().overworld();
-                            CorruptionSavedData.get(overworld).set(p.getUUID(), v, overworld.getGameTime());
-                            PacketDistributor.sendToPlayer(p, new CorruptionSyncPacket(v));
-                            ctx.getSource().sendSystemMessage(Component.literal("腐化值已设为 " + v));
-                            return 1;
-                        }))));
+                                    int v = IntegerArgumentType.getInteger(ctx, "value");
+                                    ServerLevel overworld = ctx.getSource().getServer().overworld();
+                                    CorruptionSavedData.get(overworld).set(p.getUUID(), v, overworld.getGameTime());
+                                    PacketDistributor.sendToPlayer(p, new CorruptionSyncPacket(v));
+                                    ctx.getSource().sendSystemMessage(Component.literal("腐化值已设为 " + v));
+                                    return 1;
+                                })))
+                .then(Commands.literal("corpse").executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayer();
+                    if (p == null) return 0;
+                    ServerLevel level = p.serverLevel();
+                    CorruptedCorpseEntity e = ModEntities.CORRUPTED_CORPSE.get().create(level);
+                    if (e != null) {
+                        e.moveTo(p.getX() + 2.0D, p.getY(), p.getZ(), 0.0F, 0.0F);
+                        e.setSevere(true);
+                        level.addFreshEntity(e);
+                        ctx.getSource().sendSystemMessage(Component.literal("已在你身边生成一具腐化尸体（重度），用布+铅块包裹后用铲子埋掉"));
+                    }
+                    return 1;
+                }))
+                .then(Commands.literal("bleed").then(Commands.literal("on").executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayer();
+                    if (p == null) return 0;
+                    p.addEffect(new MobEffectInstance(ModEffects.BLEEDING, 600, 0));
+                    ctx.getSource().sendSystemMessage(Component.literal("已为你附加流血效果"));
+                    return 1;
+                })).then(Commands.literal("off").executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayer();
+                    if (p == null) return 0;
+                    p.removeEffect(ModEffects.BLEEDING);
+                    ctx.getSource().sendSystemMessage(Component.literal("已解除流血效果"));
+                    return 1;
+                })));
 
         // /longarms <spawn|capture|escape> —— 长臂机制测试指令
         event.getDispatcher().register(Commands.literal("longarms")

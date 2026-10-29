@@ -5,6 +5,13 @@
   "item.corruption.long_arms_spawn_egg": "Long Arms Spawn Egg",
   "item.corruption.cursed_torch": "Cursed Torch",
   "block.corruption.cursed_torch": "Cursed Torch",
+  "item.corruption.pliers": "Pliers",
+  "item.corruption.cloth": "Cloth",
+  "item.corruption.bandage": "Bandage",
+  "item.corruption.lead_block": "Lead Block",
+  "block.corruption.lead_block": "Lead Block",
+  "entity.corruption.corrupted_corpse": "Corrupted Corpse",
+  "effect.corruption.bleeding": "Bleeding",
   "subtitles.corruption.whisper": "Whispering",
   "subtitles.corruption.heartbeat": "Heartbeat"
 }
