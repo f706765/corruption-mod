@@ -37,6 +37,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public final class CorruptionEvents {
     private static final RandomSource RANDOM = RandomSource.create();
+    private static int BLEED_TICKER = 0;          // 流血结算计时（每 100 tick = 5 秒触发一次）
+    private static final int BLEED_PERIOD = 100;  // 5 秒
+    private static final float BLEED_DAMAGE = 1.0F; // 半颗心
     private static final int TORCH_SEARCH_RADIUS = 8;
     private static final double TORCH_CHANCE = 0.10D;     // 每秒 10% 概率尝试熄火把
     private static final double WHISPER_CHANCE = 0.06D;   // 每秒 6% 概率触发低语
@@ -46,6 +49,18 @@ public final class CorruptionEvents {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
+
+        // 流血（有血）效果：每 5 秒失去半颗心
+        BLEED_TICKER++;
+        if (BLEED_TICKER % BLEED_PERIOD == 0) {
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                if (player.isCreative() || player.isSpectator()) continue;
+                if (player.hasEffect(ModEffects.BLEEDING)) {
+                    player.hurt(player.damageSources().generic(), BLEED_DAMAGE);
+                }
+            }
+        }
+
         if (server.getTickCount() % 20 != 0) return; // 每秒一次，事件不需要逐 tick
 
         CorruptionSavedData data = CorruptionSavedData.get(server.overworld());

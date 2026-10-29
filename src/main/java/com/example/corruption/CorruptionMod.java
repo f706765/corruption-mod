@@ -69,7 +69,7 @@ public class CorruptionMod {
             event.accept(ModItems.CURSED_TORCH);
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.LEAD_BLOCK);
-        } else if (event.getTabKey() == CreativeModeTabs.TOOLS) {
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModItems.PLIERS);
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.CLOTH);
