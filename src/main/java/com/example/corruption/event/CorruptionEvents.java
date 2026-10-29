@@ -182,7 +182,7 @@ public final class CorruptionEvents {
                     p.removeEffect(ModEffects.BLEEDING);
                     ctx.getSource().sendSystemMessage(Component.literal("已解除流血效果"));
                     return 1;
-                })));
+                }))));
 
         // /longarms <spawn|capture|escape> —— 长臂机制测试指令
         event.getDispatcher().register(Commands.literal("longarms")
