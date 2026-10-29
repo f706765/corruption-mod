@@ -10,6 +10,7 @@ import com.example.corruption.registry.ModAttributes;
 import com.example.corruption.registry.ModEntities;
 import com.example.corruption.registry.ModItems;
 import com.example.corruption.registry.ModSounds;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -17,6 +18,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
@@ -33,12 +35,20 @@ public class CorruptionMod {
         modBus.addListener(this::registerRenderers);
         modBus.addListener(this::registerLayerDefinitions);
         modBus.addListener(this::registerPayloads);
+        modBus.addListener(this::addCreative);
 
         NeoForge.EVENT_BUS.register(CorruptionEvents.class);
 
         // 客户端特效（暗角/心跳/镜头摇晃）只在客户端注册，服务端不加载该类
         if (FMLEnvironment.dist == Dist.CLIENT) {
             CorruptionClientEffects.register();
+        }
+    }
+
+    /** 把刷怪蛋加入创造模式物品栏（刷怪蛋页签，搜索里也能找到）。 */
+    private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+            event.accept(ModItems.WATCHER_SPAWN_EGG);
         }
     }
 
@@ -56,7 +66,7 @@ public class CorruptionMod {
 
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
         event.registrar(CorruptionMod.MODID)
-                .versioned("1.0.1")
+                .versioned("1")
                 .optional()
                 .playToClient(CorruptionSyncPacket.TYPE, CorruptionSyncPacket.STREAM_CODEC, CorruptionSyncPacket::handle);
     }
