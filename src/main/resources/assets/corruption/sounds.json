@@ -1,0 +1,13 @@
+{
+  "whisper": {
+    "category": "ambient",
+    "subtitle": "subtitles.corruption.whisper",
+    "sounds": [
+      {
+        "name": "corruption:whisper",
+        "stream": false,
+        "volume": 1.0
+      }
+    ]
+  }
+}

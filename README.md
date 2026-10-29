@@ -1,0 +1,100 @@
+# Corruption — 渐进式心理恐怖模组（NeoForge 1.21.1）
+
+隐藏的 0–100 腐化值驱动一切恐怖事件。没有跳脸，只有"好像有什么不对"。
+
+## 当前实现（首版清单）
+
+| # | 功能 | 状态 |
+|---|---|---|
+| 1 | 腐化值系统：`SavedData` 持久化每个玩家腐化值，随游戏时间增长（每 60 秒 +1，上限 100） | ✅ |
+| 2 | 核心实体「凝视者」：形态 B，两个 Goal —— 注视玩家 + 玩家靠近 6 格内后退 | ✅ |
+| 3 | whisper 音效：腐化 ≥50 时每秒 6% 概率在玩家 6–10 格外播放（可变距离衰减） | ✅ |
+| 4 | 火把熄灭事件：腐化 ≥25 时每秒 10% 概率熄灭玩家附近随机一支火把（含烟雾粒子） | ✅ |
+
+## 构建方法（一键，无需手动装 Gradle）
+
+工程已带 **Gradle Wrapper**（Gradle 发行版已指向腾讯镜像加速）：
+
+```bash
+cd corruption-mod
+./gradlew build        # Linux / macOS
+gradlew.bat build      # Windows
+```
+
+产物在 `build/libs/corruption-1.0.0.jar`，放入 `.minecraft/mods`（NeoForge 1.21.1）即可。
+首次构建会自动下载 JDK 21（若有）、NeoForge 依赖与 Minecraft，需联网（约几分钟）。
+
+> 说明：在**联网正常的本机**上 `./gradlew build` 一条命令即可；
+> 若你那边也连不上 `maven.neoforged.net`，可在 `~/.gradle/init.gradle` 加一段把该仓库重定向到
+> `https://ipv4.mirrors.ustc.edu.cn/bmclapi/`（注意：该镜像未同步 fml 等子依赖，仅在主仓库可达时可省略）。
+
+### 方式二：GitHub Actions 自动出包（无需本机装环境）
+
+工程已内置工作流 `.github/workflows/build.yml`。在**你自己**的 GitHub 账号下：
+
+```bash
+# 1) 在 GitHub 网页或用 gh 建一个仓库（如 corruption-mod）
+# 2) 本地初始化并推送本工程
+cd corruption-mod
+git init && git add -A && git commit -m "init"
+git branch -M main
+git remote add origin https://github.com/<你的用户名>/corruption-mod.git
+git push -u origin main
+```
+
+推送后 GitHub 自动触发 Actions：拉代码 → 装 JDK 21 → `./gradlew build` → 把 `build/libs/*.jar`
+作为 **Artifact** 上传。进入仓库 **Actions → 对应运行 → Artifacts** 即可下载 `corruption-mod-jar`。
+（也可 `gh run download -n corruption-mod-jar` 拉到本地。）
+
+IDE 开发：用 IntelliJ IDEA 直接打开工程（`ModDevGradle` 插件会自动配置），运行 `runClient` 调试。
+
+## 项目结构
+
+```
+src/main/java/com/example/corruption/
+├── CorruptionMod.java            # 主类：注册 + 事件总线
+├── registry/
+│   ├── ModEntities.java          # 实体注册（watcher）
+│   ├── ModAttributes.java        # 属性：速度 0.19（慢）、感知 64（远）
+│   ├── ModSounds.java            # whisper（createVariableRangeEvent）
+│   └── ModItems.java             # 刷怪蛋
+├── system/
+│   └── CorruptionSavedData.java  # 腐化值持久化（主世界 SavedData）
+├── entity/
+│   ├── WatcherEntity.java        # 凝视者
+│   ├── StareAtPlayerGoal.java    # Goal 1：注视玩家
+│   └── BackAwayGoal.java         # Goal 2：玩家 <6 格时后退
+├── event/
+│   └── CorruptionEvents.java     # 每秒调度：火把熄灭（25+）、低语（50+）
+└── client/
+    ├── WatcherModel.java         # 简单人形模型（setupAnim 全静止 = 不自然）
+    ├── WatcherRenderer.java      # cutout 渲染：贴图透明处完全透出
+    └── WatcherModelLayer.java
+
+src/main/resources/assets/corruption/
+├── sounds.json                   # whisper 定义
+├── sounds/whisper.ogg            # 单声道 OGG（粉噪+低频嗡鸣，7 秒）
+├── textures/entity/watcher.png   # 深色残缺人形贴图
+└── lang/                         # en_us / zh_cn
+```
+
+## 测试方法
+
+1. `runClient` 启动，创建生存模式世界
+2. 腐化值随时间自动增长：约 25 分钟到 25（火把开始熄灭）、50 分钟到 50（低语）
+3. 快速验证：刷怪蛋生成凝视者；或临时把 `CorruptionSavedData.TICKS_PER_POINT` 改小（如 20）加速腐化
+4. 指令 `/summon corruption:watcher`（创造模式它会无视你）
+
+## 后续路线（代码已留扩展点）
+
+- **25–49 不安期**：身后短暂生成不可交互实体、假乱码消息
+- **50–74 心理期**：假加入/离开消息、门自开关、脚步延迟
+- **75–94 敌意期**：实体绕后 AI + 客户端暗角效果（client tick）
+- **95–100 终局**：攻击模式（瞬移、贴地爬行），`WatcherEntity.aiStep()` 已留位
+- **breath / silence 音效**：sounds.json 加条目 + 注册即可
+- 形态 A/C：按腐化值切换贴图与 AI（`WatcherEntity.corruptionOf()` 已可用）
+
+## 已知限制
+
+- 本沙箱环境无法访问 NeoForge 官方依赖仓库（`maven.neoforged.net` 仅解析到不可达地址），且 BMCLAPI 等镜像未同步 `fml` 等子依赖，**故未能在此环境编译出 jar**；代码已按 NeoForge 1.21.1 / 21.1.x API 编写，请在本机 `./gradlew build` 出包。
+- 腐化值目前只随时间增长，尚无"黑暗中加速 / 白天减缓"等修正
