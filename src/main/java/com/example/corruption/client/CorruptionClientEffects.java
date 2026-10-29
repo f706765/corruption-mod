@@ -76,11 +76,11 @@ public final class CorruptionClientEffects {
         // 流血：可视距离缩短
         boolean bleeding = player.hasEffect(ModEffects.BLEEDING);
         if (bleeding && !wasBleeding) {
-            savedRenderDist = mc.options.renderDistance.get();
-            mc.options.renderDistance.set(4);
+            savedRenderDist = mc.options.renderDistance().get();
+            mc.options.renderDistance().set(4);
             wasBleeding = true;
         } else if (!bleeding && wasBleeding) {
-            mc.options.renderDistance.set(savedRenderDist);
+            mc.options.renderDistance().set(savedRenderDist);
             wasBleeding = false;
         }
     }
