@@ -1,5 +1,6 @@
 {
   "entity.corruption.watcher": "凝视者",
   "item.corruption.watcher_spawn_egg": "凝视者刷怪蛋",
-  "subtitles.corruption.whisper": "低语声"
+  "subtitles.corruption.whisper": "低语声",
+  "subtitles.corruption.heartbeat": "心跳声"
 }

@@ -1,5 +1,6 @@
 {
   "entity.corruption.watcher": "Watcher",
   "item.corruption.watcher_spawn_egg": "Watcher Spawn Egg",
-  "subtitles.corruption.whisper": "Whispering"
+  "subtitles.corruption.whisper": "Whispering",
+  "subtitles.corruption.heartbeat": "Heartbeat"
 }

@@ -16,5 +16,10 @@ public final class ModSounds {
             REGISTER.register("whisper", () -> SoundEvent.createVariableRangeEvent(
                     ResourceLocation.fromNamespaceAndPath(CorruptionMod.MODID, "whisper")));
 
+    // heartbeat：低频心跳，客户端 ≥75 时循环播放，频率随腐化升高加快
+    public static final DeferredHolder<SoundEvent, SoundEvent> HEARTBEAT =
+            REGISTER.register("heartbeat", () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(CorruptionMod.MODID, "heartbeat")));
+
     private ModSounds() {}
 }

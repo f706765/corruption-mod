@@ -1,9 +1,14 @@
 package com.example.corruption.event;
 
+import com.example.corruption.network.CorruptionSyncPacket;
 import com.example.corruption.registry.ModSounds;
 import com.example.corruption.system.CorruptionSavedData;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,7 +17,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * 腐化值事件调度（全部服务端逻辑）：
@@ -53,6 +60,9 @@ public final class CorruptionEvents {
             if (corruption >= 50 && RANDOM.nextDouble() < WHISPER_CHANCE) {
                 playWhisper(level, player);
             }
+
+            // 把腐化值同步给客户端（驱动暗角/心跳/镜头特效）
+            PacketDistributor.sendToPlayer(player, new CorruptionSyncPacket(corruption));
         }
         if (dirty) data.setDirty();
     }
@@ -85,5 +95,33 @@ public final class CorruptionEvents {
         double y = player.getY() + (RANDOM.nextDouble() - 0.2D);
         level.playSound(null, x, y, z, ModSounds.WHISPER.value(),
                 SoundSource.AMBIENT, 0.8F, 0.85F + RANDOM.nextFloat() * 0.3F);
+    }
+
+    /** /corruption get|set —— 测试指令，快速查看或拉高/清零腐化值。 */
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("corruption")
+                .then(Commands.literal("get").executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayer();
+                    if (p == null) return 0;
+                    ServerLevel overworld = ctx.getSource().getServer().overworld();
+                    int c = CorruptionSavedData.get(overworld).get(p.getUUID(), overworld.getGameTime());
+                    ctx.getSource().sendSystemMessage(Component.literal("你的腐化值：" + c));
+                    return 1;
+                }))
+                .then(Commands.literal("set").then(Commands.argument("value", IntegerArgumentType.integer(0, 100))
+                        .executes(ctx -> {
+                            ServerPlayer p = ctx.getSource().getPlayer();
+                            if (p == null) {
+                                ctx.getSource().sendFailure(Component.literal("该指令只能由玩家执行"));
+                                return 0;
+                            }
+                            int v = IntegerArgumentType.getInteger(ctx, "value");
+                            ServerLevel overworld = ctx.getSource().getServer().overworld();
+                            CorruptionSavedData.get(overworld).set(p.getUUID(), v, overworld.getGameTime());
+                            PacketDistributor.sendToPlayer(p, new CorruptionSyncPacket(v));
+                            ctx.getSource().sendSystemMessage(Component.literal("腐化值已设为 " + v));
+                            return 1;
+                        }))));
     }
 }

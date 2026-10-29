@@ -9,5 +9,16 @@
         "volume": 1.0
       }
     ]
+  },
+  "heartbeat": {
+    "category": "ambient",
+    "subtitle": "subtitles.corruption.heartbeat",
+    "sounds": [
+      {
+        "name": "corruption:heartbeat",
+        "stream": false,
+        "volume": 1.0
+      }
+    ]
   }
 }

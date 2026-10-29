@@ -1,6 +1,7 @@
 .gradle/
 build/
 run/
+dist/
 *.log
 *.class
 .DS_Store

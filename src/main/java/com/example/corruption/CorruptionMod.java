@@ -4,16 +4,19 @@ import com.example.corruption.client.WatcherModel;
 import com.example.corruption.client.WatcherModelLayer;
 import com.example.corruption.client.WatcherRenderer;
 import com.example.corruption.event.CorruptionEvents;
+import com.example.corruption.network.CorruptionSyncPacket;
 import com.example.corruption.registry.ModAttributes;
 import com.example.corruption.registry.ModEntities;
 import com.example.corruption.registry.ModItems;
 import com.example.corruption.registry.ModSounds;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @Mod(CorruptionMod.MODID)
 public class CorruptionMod {
@@ -27,6 +30,7 @@ public class CorruptionMod {
         modBus.addListener(this::registerAttributes);
         modBus.addListener(this::registerRenderers);
         modBus.addListener(this::registerLayerDefinitions);
+        modBus.addListener(this::registerPayloads);
 
         NeoForge.EVENT_BUS.register(CorruptionEvents.class);
     }
@@ -41,5 +45,12 @@ public class CorruptionMod {
 
     private void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(WatcherModelLayer.WATCHER, WatcherModel::createBodyLayer);
+    }
+
+    private void registerPayloads(RegisterPayloadHandlersEvent event) {
+        event.registrar(CorruptionMod.MODID)
+                .versioned("1.0.1")
+                .optional()
+                .playToClient(CorruptionSyncPacket.TYPE, CorruptionSyncPacket.STREAM_CODEC, CorruptionSyncPacket::handle);
     }
 }
