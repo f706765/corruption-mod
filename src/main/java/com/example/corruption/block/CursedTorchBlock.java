@@ -53,6 +53,6 @@ public class CursedTorchBlock extends Block {
                 return ItemInteractionResult.SUCCESS;
             }
         }
-        return ItemInteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 }
