@@ -18,7 +18,8 @@ public final class ModBlocks {
                     .sound(SoundType.WOOD)
                     .noCollission()
                     .noOcclusion()
-                    .strength(0.5F)));
+                    .strength(0.5F)
+                    .lightLevel(state -> state.getValue(CursedTorchBlock.LIT) ? 15 : 0)));
 
     private ModBlocks() {}
 }

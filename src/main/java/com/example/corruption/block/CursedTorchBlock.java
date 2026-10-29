@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -37,13 +37,8 @@ public class CursedTorchBlock extends Block {
     }
 
     @Override
-    public int getLightEmission(BlockState state) {
-        return state.getValue(LIT) ? 15 : 0;
-    }
-
-    @Override
-    public InteractionResult useItemOn(BlockState state, Level level, BlockPos pos,
-                                       Player player, InteractionHand hand, BlockHitResult hit) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
+                                             BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!state.getValue(LIT)) {
             ItemStack held = player.getItemInHand(hand);
             if (held.is(Items.TORCH) && held.getCount() > 0) {
@@ -55,9 +50,9 @@ public class CursedTorchBlock extends Block {
                         LongArmsRoom.onTorchLit((net.minecraft.server.level.ServerLevel) level, sp);
                     }
                 }
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return ItemInteractionResult.SUCCESS;
             }
         }
-        return InteractionResult.PASS;
+        return ItemInteractionResult.PASS;
     }
 }
