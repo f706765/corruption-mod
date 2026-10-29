@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": { "model": "corruption:block/cursed_torch" },
+    "lit=true":  { "model": "corruption:block/cursed_torch_lit" }
+  }
+}

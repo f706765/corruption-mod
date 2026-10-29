@@ -14,6 +14,7 @@
 | 6 | **心跳声（听觉）**：腐化 ≥75 时循环播放 `corruption:heartbeat`，频率随腐化升高加快 | ✅ `v1.0.1` |
 | 7 | **镜头摇晃（视觉）**：腐化 ≥90 时轻微倾斜/摇晃摄像机，模拟理智边缘眩晕 | ✅ `v1.0.1` |
 | 8 | **`/corruption` 测试指令**：`get` 查看、`set <0-100>` 快速拉高/清零腐化值 | ✅ `v1.0.1` |
+| 9 | **新怪物「长臂」**：全身漆黑、长臂长腿，蹲在树后只露手；盯着那棵树超过 10 秒 → 它察觉并冲过来把你抓进漆黑暗域，手上获得火把，任务：重新点亮 3 个诅咒火炬即可逃脱 | ✅ `v1.0.3` |
 
 ## 构建方法（一键，无需手动装 Gradle）
 
@@ -25,7 +26,7 @@ cd corruption-mod
 gradlew.bat build      # Windows
 ```
 
-产物在 `build/libs/corruption-1.0.1.jar`，放入 `.minecraft/mods`（NeoForge 1.21.1）即可。
+产物在 `build/libs/corruption-1.0.3.jar`，放入 `.minecraft/mods`（NeoForge 1.21.1）即可。
 首次构建会自动下载 JDK 21（若有）、NeoForge 依赖与 Minecraft，需联网（约几分钟）。
 
 > 说明：在**联网正常的本机**上 `./gradlew build` 一条命令即可；
@@ -58,24 +59,34 @@ IDE 开发：用 IntelliJ IDEA 直接打开工程（`ModDevGradle` 插件会自�
 src/main/java/com/example/corruption/
 ├── CorruptionMod.java            # 主类：注册 + 事件总线
 ├── registry/
-│   ├── ModEntities.java          # 实体注册（watcher）
+│   ├── ModEntities.java          # 实体注册（watcher / long_arms）
 │   ├── ModAttributes.java        # 属性：速度 0.19（慢）、感知 64（远）
+│   ├── ModBlocks.java            # 诅咒火炬方块
 │   ├── ModSounds.java            # whisper + heartbeat（createVariableRangeEvent）
-│   └── ModItems.java             # 刷怪蛋
+│   └── ModItems.java             # 刷怪蛋 + 诅咒火炬物品
 ├── system/
-│   └── CorruptionSavedData.java  # 腐化值持久化（主世界 SavedData）
+│   ├── CorruptionSavedData.java  # 腐化值持久化（主世界 SavedData）
+│   ├── LongArmsCapturedData.java # 被抓玩家存档（返回坐标/维度 + 暗域房间原点）
+│   └── LongArmsRoom.java         # 暗域房间：建造 / 抓捕 / 逃脱
 ├── entity/
 │   ├── WatcherEntity.java        # 凝视者
+│   ├── LongArmsEntity.java       # 长臂：树后潜伏 + 注视检测 + 抓捕
 │   ├── StareAtPlayerGoal.java    # Goal 1：注视玩家
 │   └── BackAwayGoal.java         # Goal 2：玩家 <6 格时后退
+├── block/
+│   └── CursedTorchBlock.java     # 诅咒火炬（未点亮/点亮两态，点亮即发光）
 ├── event/
-│   └── CorruptionEvents.java     # 每秒调度：火把熄灭（25+）、低语（50+）、腐化值同步、/corruption 指令
+│   ├── CorruptionEvents.java     # 每秒调度：火把熄灭（25+）、低语（50+）、腐化值同步、/corruption 与 /longarms 指令
+│   └── LongArmsEvents.java       # 自然生成调度（森林/针叶林夜晚）
 ├── network/
 │   └── CorruptionSyncPacket.java # 服务端→客户端：同步本地玩家腐化值
 └── client/
     ├── WatcherModel.java         # 简单人形模型（setupAnim 全静止 = 不自然）
     ├── WatcherRenderer.java      # cutout 渲染：贴图透明处完全透出
     ├── WatcherModelLayer.java
+    ├── LongArmsModel.java        # 长臂瘦高模型（长臂长腿）
+    ├── LongArmsRenderer.java
+    ├── LongArmsModelLayer.java
     ├── ClientCorruptionData.java # 客户端持有的本地腐化值（收包更新）
     └── CorruptionClientEffects.java # 暗角粒子/心跳/镜头摇晃（仅客户端）
 
@@ -84,6 +95,8 @@ src/main/resources/assets/corruption/
 ├── sounds/whisper.ogg            # 单声道 OGG（粉噪+低频嗡鸣，7 秒）
 ├── sounds/heartbeat.ogg          # 单声道 OGG（低频 lub-dub 双拍）
 ├── textures/entity/watcher.png   # 深色残缺人形贴图
+├── textures/entity/longarms.png  # 纯黑长臂贴图
+├── textures/block/cursed_torch.png / cursed_torch_lit.png
 └── lang/                         # en_us / zh_cn
 ```
 

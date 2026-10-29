@@ -1,8 +1,12 @@
 package com.example.corruption.event;
 
+import com.example.corruption.entity.LongArmsEntity;
 import com.example.corruption.network.CorruptionSyncPacket;
+import com.example.corruption.registry.ModEntities;
 import com.example.corruption.registry.ModSounds;
 import com.example.corruption.system.CorruptionSavedData;
+import com.example.corruption.system.LongArmsCapturedData;
+import com.example.corruption.system.LongArmsRoom;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -123,5 +127,39 @@ public final class CorruptionEvents {
                             ctx.getSource().sendSystemMessage(Component.literal("腐化值已设为 " + v));
                             return 1;
                         }))));
+
+        // /longarms <spawn|capture|escape> —— 长臂机制测试指令
+        event.getDispatcher().register(Commands.literal("longarms")
+                .then(Commands.literal("spawn").executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayer();
+                    if (p == null) return 0;
+                    ServerLevel level = p.serverLevel();
+                    LongArmsEntity ent = ModEntities.LONG_ARMS.get().create(level);
+                    if (ent != null) {
+                        ent.moveTo(p.getX() + 3.0D, p.getY(), p.getZ(), 0.0F, 0.0F);
+                        level.addFreshEntity(ent);
+                        ctx.getSource().sendSystemMessage(Component.literal("已在你身边生成长臂"));
+                    }
+                    return 1;
+                }))
+                .then(Commands.literal("capture").executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayer();
+                    if (p == null) return 0;
+                    LongArmsRoom.capture(p);
+                    ctx.getSource().sendSystemMessage(Component.literal("你被抓进了暗域，点亮三个火炬即可逃脱"));
+                    return 1;
+                }))
+                .then(Commands.literal("escape").executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayer();
+                    if (p == null) return 0;
+                    LongArmsCapturedData.Entry e = LongArmsCapturedData.get(p.server.overworld()).get(p.getUUID());
+                    if (e == null) {
+                        ctx.getSource().sendSystemMessage(Component.literal("你并不在暗域"));
+                        return 0;
+                    }
+                    LongArmsRoom.escape(p, e);
+                    ctx.getSource().sendSystemMessage(Component.literal("你逃出了暗域"));
+                    return 1;
+                })));
     }
 }

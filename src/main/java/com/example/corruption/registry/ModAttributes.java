@@ -1,5 +1,6 @@
 package com.example.corruption.registry;
 
+import com.example.corruption.entity.LongArmsEntity;
 import com.example.corruption.entity.WatcherEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -13,6 +14,14 @@ public final class ModAttributes {
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)
                 .add(Attributes.STEP_HEIGHT, 1.0D);
+    }
+
+    public static AttributeSupplier.Builder longArmsAttributes() {
+        return LongArmsEntity.createAttributes()
+                .add(Attributes.MAX_HEALTH, 30.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.30D)
+                .add(Attributes.FOLLOW_RANGE, 64.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D);
     }
 
     private ModAttributes() {}

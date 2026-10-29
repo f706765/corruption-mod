@@ -1,6 +1,10 @@
 {
   "entity.corruption.watcher": "凝视者",
   "item.corruption.watcher_spawn_egg": "凝视者刷怪蛋",
+  "entity.corruption.long_arms": "长臂",
+  "item.corruption.long_arms_spawn_egg": "长臂刷怪蛋",
+  "item.corruption.cursed_torch": "诅咒火炬",
+  "block.corruption.cursed_torch": "诅咒火炬",
   "subtitles.corruption.whisper": "低语声",
   "subtitles.corruption.heartbeat": "心跳声"
 }
